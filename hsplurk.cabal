@@ -1,0 +1,16 @@
+name: hsplurk
+version: 0.0.1
+cabal-version:  >= 1.2
+build-type: Simple
+license:  BSD3
+license-file: LICENSE
+author: Jyun-Yan You
+maintainer: Jyun-Yan You <crabtw@gmail.com>
+synopsis: Haskell binding to the Plurk API
+description: Haskell binding to the Plurk API
+category: Web
+
+library
+  build-depends: base >= 3, curl, json > 0.4
+  exposed-modules: Web.Plurk
+  ghc-options: -Wall
