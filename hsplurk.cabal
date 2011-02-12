@@ -6,8 +6,8 @@ license:  BSD3
 license-file: LICENSE
 author: Jyun-Yan You
 maintainer: Jyun-Yan You <crabtw@gmail.com>
-synopsis: Haskell binding to the Plurk API
-description: Haskell binding to the Plurk API
+synopsis: Haskell implementation of Plurk API
+description: Haskell implementation of Plurk API
 category: Web
 
 library
