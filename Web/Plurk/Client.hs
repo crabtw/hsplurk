@@ -36,19 +36,19 @@ apiBase = "www.plurk.com"
 apiSSL s = "https://" ++ apiBase ++ s
 api s = "http://" ++ apiBase ++ s
 
-runPlurk :: FilePath -> APIKey -> PM a -> IO a
-runPlurk path key act = withCurlDo $ do
-                            h <- initialize
-                            let env = PEnv key h
-                            setopts h opts
-                            unPM act env
+runPlurk :: APIKey -> PM a -> IO a
+runPlurk key act = withCurlDo $ do
+                    h <- initialize
+                    let env = PEnv key h
+                    setopts h opts
+                    unPM act env
     where opts = method_POST ++ misc
-          misc = [ CurlCookieJar path
+          misc = [ CurlCookieFile ""
                  , CurlSSLVerifyPeer False
                  ]
 
-postData :: JSON a => [(String, String)] -> URLString -> PM (PReturn a)
-postData ps url = PM $ \env -> do
+postData :: JSON a => URLString -> [(String, String)] -> PM (PReturn a)
+postData url ps = PM $ \env -> do
     let fields = genFields $ ("api_key", apiKey env) : ps
     resp <- do_curl_ (handle env) url [CurlPostFields fields] :: IO Resp
     let result = decodeStrict $ respBody resp
