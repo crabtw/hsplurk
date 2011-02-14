@@ -11,6 +11,6 @@ description: Haskell implementation of Plurk API
 category: Web
 
 library
-  build-depends: base >= 3, curl, json > 0.4
+  build-depends: base >= 3, curl, json > 0.4, time
   exposed-modules: Web.Plurk
   ghc-options: -Wall

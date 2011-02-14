@@ -47,7 +47,7 @@ runPlurk key act = withCurlDo $ do
                  , CurlSSLVerifyPeer False
                  ]
 
-postData :: JSON a => URLString -> [(String, String)] -> PM (PReturn a)
+postData :: URLString -> [(String, String)] -> PM (PReturn JSValue)
 postData url ps = PM $ \env -> do
     let fields = genFields $ ("api_key", apiKey env) : ps
     resp <- do_curl_ (handle env) url [CurlPostFields fields] :: IO Resp
@@ -59,7 +59,8 @@ postData url ps = PM $ \env -> do
 genFields :: [(String, String)] -> [String]
 genFields = map (\(k, v) -> k ++ "=" ++ v)
 
-checkResult :: JSON a => (a -> PReturn a) -> Result a -> PReturn a
+checkResult :: (JSValue -> PReturn JSValue) -> Result JSValue
+                                            -> PReturn JSValue
 checkResult retVal result = case result of
                                 Ok json -> retVal json
                                 Error msg -> PDecErr msg

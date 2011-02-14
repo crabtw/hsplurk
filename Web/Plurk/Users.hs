@@ -1,5 +1,4 @@
-module Web.Plurk.Users ( LoginOpt (..)
-                       , login
+module Web.Plurk.Users ( login
                        , logout
                        ) where
 
@@ -8,28 +7,12 @@ import Text.JSON
 import Web.Plurk.Client
 import Web.Plurk.Types
 
-data LoginParam = LoginParam { loginUsername :: String
-                             , loginPassword :: String   
-                             , loginOpt :: LoginOpt
-                             }
-
-data LoginOpt = LoginOpt { loginNoData :: Maybe Bool }
-
-instance Param LoginParam where
-    toStrList LoginParam { loginUsername = user
-                         , loginPassword = pw
-                         , loginOpt = opt
-                         } = [("username", user), ("password", pw)] ++ noData
-        where noData = maybe [] (\n -> [("no_data", show $ fromEnum n)]) $ loginNoData opt
-
-instance Opt LoginOpt where
-    opt = LoginOpt Nothing
-
-login :: JSON a => String -> String -> LoginOpt -> PM (PReturn a)
-login user pw opt = do
+login :: JSON a => String -> String -> Maybe Bool -> PM (PReturn a)
+login user pw noData = do
     let url = apiSSL "/API/Users/login"
-    let ps = toStrList $ LoginParam user pw opt
-    resp <- postData url ps
+        ps = [("username", user), ("password", pw)] ++ no
+        no = maybe [] (\n -> [("no_data", show $ fromEnum n)]) noData
+    resp <- postData url ps :: PM JSValue
     return resp
 
 logout :: JSON a => PM (PReturn a)
