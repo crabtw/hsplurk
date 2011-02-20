@@ -1,11 +1,21 @@
 module Web.Plurk.Profile ( getOwnProfile
+                         , getPublicProfile
                          ) where
 
-import Text.JSON
-
 import Web.Plurk.Client
+import Web.Plurk.Types
+import Web.Plurk.Utils
 
-getOwnProfile :: JSON a => PM (PReturn a)
+getOwnProfile :: PM (Return Profile)
 getOwnProfile = do
     let url = api "/API/Profile/getOwnProfile"
-    postData url [] >>= return
+    result <- postData url []
+    retMapJs (jsToProfile True) result
+
+getPublicProfile :: Either String Int -> PM (Return Profile)
+getPublicProfile user = do
+    let url = api "/API/Profile/getPublicProfile"
+        user' = either id show user
+        params = [("user_id", user')]
+    result <- postData url params
+    retMapJs (jsToProfile False) result

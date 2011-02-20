@@ -1,21 +1,67 @@
 module Web.Plurk.Users ( login
                        , logout
+                       , register
+                       , getKarmaStats
+                       , update
                        ) where
 
-import Text.JSON
+import Data.Time
 
 import Web.Plurk.Client
 import Web.Plurk.Types
+import Web.Plurk.Utils
 
-login :: JSON a => String -> String -> Maybe Bool -> PM (PReturn a)
+register :: String -> String -> String -> Gender -> Day
+         -> Maybe String -> PM (Return User)
+register nick full pw gender birth email = do
+    let url = apiSSL "API/Users/register"
+        email' = optParam id "email" email
+        params = [ ("nick_name", nick)
+                 , ("full_name", full)
+                 , ("password", pw)
+                 , ("gender", show gender)
+                 , ("date_of_birth", show birth)
+                 ] ++ email'
+    result <- postData url params
+    retMapJs jsToUser result
+
+login :: String -> String -> Maybe Bool -> PM (Return Profile)
 login user pw noData = do
     let url = apiSSL "/API/Users/login"
-        ps = [("username", user), ("password", pw)] ++ no
-        no = maybe [] (\n -> [("no_data", show $ fromEnum n)]) noData
-    resp <- postData url ps :: PM JSValue
-    return resp
+        noData' = optParam (show . fromEnum) "no_data" noData
+        params = [("username", user), ("password", pw)] ++ noData'
+    result <- postData url params
+    if maybe False id noData
+        then retUnit result
+        else retMapJs (jsToProfile True) result
 
-logout :: JSON a => PM (PReturn a)
+logout :: PM (Return ())
 logout = do
     let url = api "/API/Users/logout"
-    postData url [] >>= return
+    result <- postData url []
+    retUnit result
+
+update :: String -> Maybe String -> Maybe String -> Maybe String
+        -> Maybe String -> Maybe Privacy -> Maybe Day -> PM (Return User)
+update pw full newPw email display priv birth = do
+    let url = apiSSL "/API/Users/update"
+        full' = optParam id "full_name" full
+        newPw' = optParam id "new_password" newPw
+        email' = optParam id "email" email
+        display' = optParam id "display_name" display
+        priv' = optParam show "privacy" priv
+        birth' = optParam show "date_of_birth" birth
+        params = [("password", pw)] ++ full'
+                                    ++ newPw'
+                                    ++ email'
+                                    ++ display'
+                                    ++ priv'
+                                    ++ birth'
+    result <- postData url params
+    retMapJs jsToUser result
+
+getKarmaStats :: PM (Return KarmaStat)
+getKarmaStats = do
+    let url = api "/API/Users/getKarmaStats"
+    result <- postData url []
+    retMapJs jsToKarmaStat result
